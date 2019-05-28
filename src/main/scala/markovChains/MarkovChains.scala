@@ -9,6 +9,7 @@ class MarkovChains {
 
   //val filePath = "/shakespeare_corpus.txt"
   val filePath = "/fiction_corpus.txt"
+  val testPath = "/fiction_test.txt"
 
   val MARKOV_MAP: mutable.Map[Seq[String], mutable.Map[String, Int]] = new mutable.HashMap()
   val CHAIN_SIZE = 2
@@ -20,7 +21,7 @@ class MarkovChains {
       .filterNot(p => p.length < CHAIN_SIZE + 1)
       .toList
 
-    segments.foreach(s => println(s"segment: ${s.toList}"))
+    //segments.foreach(s => println(s"segment: ${s.toList}"))
 
     for (segment <- segments) {
       val key = segment.take(CHAIN_SIZE)
@@ -68,6 +69,32 @@ class MarkovChains {
     sentence.view(1, sentence.size - 1).mkString(" ").capitalize
   }
 
+
+  def runTestData():Unit = {
+    println("Testing.....")
+    val testData:List[(Int, Int)] = Source.fromURL(getClass.getResource(testPath)).getLines()
+        .toList
+      .map(normalize)
+      .map(s => s.trim)
+      .map(a => {
+        val b = a.split(" ")
+          .sliding(CHAIN_SIZE + 1)
+          .filterNot(p => p.length < CHAIN_SIZE + 1)
+          .map(_.toList)
+          .toList
+          .map {
+            case List(x, y, z) =>  if(nextWord(Seq(x, y)).contains(z)){ 1 } else { 0 }
+          }
+
+        (b.sum, b.length)
+      })
+
+    val resultAccuracy = testData.foldRight((0, 0)){(a, b) => (a._1 + b._1, a._2 + b._2)}
+
+    println(s"The Accuracy of our model against the test data is:  ${100*resultAccuracy._1.toDouble/resultAccuracy._2.toDouble} %")
+    println(s"or ${resultAccuracy._1} correct predictions out of ${resultAccuracy._2} trials")
+  }
+
 }
 
 
@@ -79,6 +106,12 @@ object RunTrial extends MarkovChains with App {
   println("****************************")*/
   val genText = (0 until 14).map(_ => nextSentence()).mkString("\n")
 
-  print(genText)
+  println(genText)
+
+
+  println("****************************")
+
+
+  runTestData()
 
 }

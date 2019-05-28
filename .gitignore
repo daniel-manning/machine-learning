@@ -26,6 +26,7 @@ project/target
 server.pid
 /.settings
 src/main/resources/fiction_corpus.txt
+src/main/resources/fiction_test.txt
 target
 .target
 test-result
